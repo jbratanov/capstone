@@ -1,0 +1,110 @@
+---
+title: "Data Science Capstone"
+author: "jbratanov"
+date: "Monday, August 22, 2016"
+output: html_document
+---
+# Synopsis
+We will be doing Exploratory data analysis of data from SwiftKey, a company which is known for their application on cell phones that learn your word patterns as you type messages.  Our goal is to build a similar predictive text pattern algorithm as the Swiftkey solution using Natural Language Processing to predict the next word or set of words as users type real time.
+
+# Data Processing
+
+### Dataset Information
+The data is from a corpus called HC Corpora and is located at www.corpora.heliohost.org.  The readme file for the dataset used is located at www.corpora.heliohost.org/aboutcorpus.html.
+
+### Dataset Download Information
+In order to speed up retrieval of the training data to be used by the Capstone project, I manually downloaded the training data located at https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip.
+
+The en_us based datasets were unzipped into the capstone project data directory as: 
+
++ en_US.news.txt
++ en_US.twitter.txt
++ en_US.blogs.txt
+
+
+```{r cacheDataRead, cache=TRUE}
+# Load files using cache option, as re-reading during test would take too long
+# Included skilNul=TRUE statement to get rid of nulls from first pass.
+newsText <- readLines("../data/en_US.news.txt", skipNul = TRUE)
+twitterText <- readLines("../data/en_US.twitter.txt", skipNul = TRUE)
+blogText <- readLines("../data/en_US.blogs.txt", skipNul = TRUE)
+```
+### Dataset Analysis
+```{r cacheDataRead2, cache=TRUE}
+library(stringr)
+
+# Show first few rows of data
+head(blogText)
+head(newsText)
+head(twitterText)
+
+# Get number of lines
+blogLen <- length(blogText)
+newsLen <- length(newsText)
+twitLen <- length(twitterText)
+paste("Number of lines:", "Blogger Text=", blogLen, "News Text=", newsLen, "Twitter Text=", twitLen)
+
+# Get number of words
+blogWords <- sum(sapply(strsplit(blogText, "\\s+"), length))
+newsWords <- sum(sapply(strsplit(newsText, "\\s+"), length))
+twitWords <- sum(sapply(strsplit(twitterText, "\\s+"), length))
+
+# Get number of characters
+blogSum <- sum(nchar(blogText))
+newsSum <- sum(nchar(newsText))
+twitSum <- sum(nchar(twitterText))
+paste("Number of chars:", "Blogger Text=", blogSum, "News Text=", newsSum, "Twitter Text=", twitSum)
+
+# Get average line size
+paste("Average line size in characters:", "Blogger Text=", as.integer(blogSum/blogLen),
+      "News Text=", as.integer(newsSum/newsLen),
+      "Twitter Text=", as.integer(twitSum/twitLen))
+
+# Create DF to store info
+name <- c('Blog', 'News', 'Twitter')
+lines <- c(blogLen, newsLen, twitLen)
+words <- c(blogWords, newsWords, twitWords)
+chars <- c(blogSum, newsSum, twitSum)
+avgLineSize <- c(as.integer(blogSum/blogLen), as.integer(newsSum/newsLen), as.integer(twitSum/twitLen))
+textInfo <- data.frame(name, lines, words, chars, avgLineSize)
+
+# Plot data
+
+# Create a summary grid of data
+library(gridExtra)
+grid.table(textInfo)
+
+# Number of Lines Plot
+par(cex=.75)
+plotLines <- barplot(textInfo$lines/1000, main="Number of Lines in (Thousands)",
+                     horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
+                     ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 2500))
+text(textInfo$lines/1000+50, 1:3, as.integer(textInfo$lines/1000), cex=1)
+
+# Number of Words Plot
+par(cex=.75)
+plotLines <- barplot(textInfo$words/1000000, main="Number of Words in (Millions)",
+                     horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
+                     ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 40))
+text(textInfo$words/1000000+1, 1:3, as.integer(textInfo$words/1000000), cex=1)
+
+# Number of characters Plot
+par(cex=.75)
+plotLines <- barplot(textInfo$chars/1000000, main="Number of Characters in (Millions)",
+                     horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
+                     ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 300))
+text(textInfo$chars/1000000+5, 1:3, as.integer(textInfo$chars/1000000), cex=1)
+
+# Average line size Plot
+par(cex=.75)
+plotLines <- barplot(as.integer(textInfo$avgLineSize), main="Average Line Size",
+                     horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
+                     ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 300))
+text(as.integer(textInfo$avgLineSize)+5, 1:3, as.integer(textInfo$avgLineSize), cex=1)
+
+
+
+```
+
+
+
