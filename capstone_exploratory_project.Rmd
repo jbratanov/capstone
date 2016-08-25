@@ -7,7 +7,7 @@ output: html_document
 # Synopsis
 We will be doing Exploratory data analysis of data from SwiftKey, a company which is known for their application on cell phones that learn your word patterns as you type messages.  Our goal is to build a similar predictive text pattern algorithm as the Swiftkey solution using Natural Language Processing to predict the next word or set of words as users type real time.
 
-# Data Processing
+# Dataset Processing
 
 ### Dataset Information
 The data is from a corpus called HC Corpora and is located at www.corpora.heliohost.org.  The readme file for the dataset used is located at www.corpora.heliohost.org/aboutcorpus.html.
@@ -23,28 +23,42 @@ The en_us based datasets were unzipped into the capstone project data directory 
 
 
 ```{r cacheDataRead, cache=TRUE}
+
+
 # Load files using cache option, as re-reading during test would take too long
 # Included skilNul=TRUE statement to get rid of nulls from first pass.
+blogText <- readLines("../data/en_US.blogs.txt", skipNul = TRUE)
 newsText <- readLines("../data/en_US.news.txt", skipNul = TRUE)
 twitterText <- readLines("../data/en_US.twitter.txt", skipNul = TRUE)
-blogText <- readLines("../data/en_US.blogs.txt", skipNul = TRUE)
+
 ```
-### Dataset Analysis
-```{r cacheDataRead2, cache=TRUE}
+### Initial Dataset Analysis
+#### Display and describe first few lines of Information in each Dataset
+
+   + __Blog__ - The text is informal with decent grammar, but tends to run on too long without breaks.  Observed non-English words and special characters.
+   + __News__ - The text is formal and describes events with good grammar.  Initial observations show no special characters outside of punctuation.
+   + __Twitter__ - The data is very curt, informal and poor grammar.  Sentences are brief with jargon and many special characters.
+
+```{r cacheDataRead2, cache=TRUE, echo=FALSE}
 library(stringr)
 
+# Get file size data
+blogFileSize <- file.info("../data/en_US.blogs.txt")$size
+newsFileSize <- file.info("../data/en_US.news.txt")$size
+twitFileSize <- file.info("../data/en_US.twitter.txt")$size
+
 # Show first few rows of data
-head(blogText)
-head(newsText)
-head(twitterText)
+head(blogText, 4)
+head(newsText, 4)
+head(twitterText, 4)
 
 # Get number of lines
 blogLen <- length(blogText)
 newsLen <- length(newsText)
 twitLen <- length(twitterText)
-paste("Number of lines:", "Blogger Text=", blogLen, "News Text=", newsLen, "Twitter Text=", twitLen)
 
 # Get number of words
+# Regex \\s+ is used to split on whitespace
 blogWords <- sum(sapply(strsplit(blogText, "\\s+"), length))
 newsWords <- sum(sapply(strsplit(newsText, "\\s+"), length))
 twitWords <- sum(sapply(strsplit(twitterText, "\\s+"), length))
@@ -53,58 +67,87 @@ twitWords <- sum(sapply(strsplit(twitterText, "\\s+"), length))
 blogSum <- sum(nchar(blogText))
 newsSum <- sum(nchar(newsText))
 twitSum <- sum(nchar(twitterText))
-paste("Number of chars:", "Blogger Text=", blogSum, "News Text=", newsSum, "Twitter Text=", twitSum)
-
-# Get average line size
-paste("Average line size in characters:", "Blogger Text=", as.integer(blogSum/blogLen),
-      "News Text=", as.integer(newsSum/newsLen),
-      "Twitter Text=", as.integer(twitSum/twitLen))
 
 # Create DF to store info
 name <- c('Blog', 'News', 'Twitter')
+fileSize <- c(blogFileSize, newsFileSize, twitFileSize)
 lines <- c(blogLen, newsLen, twitLen)
 words <- c(blogWords, newsWords, twitWords)
 chars <- c(blogSum, newsSum, twitSum)
 avgLineSize <- c(as.integer(blogSum/blogLen), as.integer(newsSum/newsLen), as.integer(twitSum/twitLen))
-textInfo <- data.frame(name, lines, words, chars, avgLineSize)
-
-# Plot data
+aveWordsPerLine <- c(as.integer(blogWords/blogLen),
+                     as.integer(newsWords/newsLen), as.integer(twitWords/twitLen))
+textInfo <- data.frame(name, fileSize, lines, words, chars, avgLineSize, aveWordsPerLine)
+```
+#### Table Grid with Dataset Summary Information
+I was able to use the Dataset summary information to detect a problem with loading all the data from the News Text file.  The Blog and Twitter datasets were 99% and 97% respectively between file byte size and number characters read, the News Dataset came in at 75%.  Although the data loss was 25% of the file, I decided to move forward as the amount of data captured serves the purpose for this exercise.  I did a visual and print of the data and saw no extraneous or bad data which would affect the project.
+```{r cacheDataRead3, cache=TRUE, echo=FALSE}
 
 # Create a summary grid of data
 library(gridExtra)
-grid.table(textInfo)
+library(grid)
+
+# Get grid format
+gridTheme <- ttheme_default(core=list(
+        bg_params = list(fill=c("yellow", "red", "green"))
+))
+    
+# Create Data Grid
+grid.table(textInfo, theme=gridTheme)
+
+
+
+```
+
+#### Barplots to Visually Compare Dataset Information
+The metric information for the datasets supports the visual observations of the data.  Twitter average words per line is one third of news and blog lines.  Blogs as expected, is the largest.
+
+```{r echo=FALSE}
+
+par(mfrow=c(2,2))
+
 
 # Number of Lines Plot
-par(cex=.75)
+par(cex=.5)
 plotLines <- barplot(textInfo$lines/1000, main="Number of Lines in (Thousands)",
                      horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
                      ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 2500))
-text(textInfo$lines/1000+50, 1:3, as.integer(textInfo$lines/1000), cex=1)
+text(textInfo$lines/1000+55, 1:3, as.integer(textInfo$lines/1000), cex=1)
 
 # Number of Words Plot
-par(cex=.75)
+par(cex=.5)
 plotLines <- barplot(textInfo$words/1000000, main="Number of Words in (Millions)",
                      horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
                      ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 40))
 text(textInfo$words/1000000+1, 1:3, as.integer(textInfo$words/1000000), cex=1)
 
 # Number of characters Plot
-par(cex=.75)
+par(cex=.5)
 plotLines <- barplot(textInfo$chars/1000000, main="Number of Characters in (Millions)",
                      horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
                      ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 300))
-text(textInfo$chars/1000000+5, 1:3, as.integer(textInfo$chars/1000000), cex=1)
+text(textInfo$chars/1000000+10, 1:3, as.integer(textInfo$chars/1000000), cex=1)
 
 # Average line size Plot
-par(cex=.75)
+par(cex=.5)
 plotLines <- barplot(as.integer(textInfo$avgLineSize), main="Average Line Size",
                      horiz=TRUE, names.arg=textInfo$name, col=c("yellow", "red", "green"),
                      ylab="Corpus Source", cex.lab=1, cex.main=2, xlim=c(0, 300))
-text(as.integer(textInfo$avgLineSize)+5, 1:3, as.integer(textInfo$avgLineSize), cex=1)
+text(as.integer(textInfo$avgLineSize)+10, 1:3, as.integer(textInfo$avgLineSize), cex=1)
 
 
 
 ```
+# Data Exploratory Analysis
+Now that we understand the high level and physical characters of the datasets, we will start analyzing the details of the data.  I decided to treat each dataset as its own.  There were conflicting recommendations on merging versus not merging datasets.  I felt each corpus domain (blogs, news, tweets) had its own challenges which could be better solved individually.
+
+### Data Clean-up
+First we will do some initial clean-up of the data to allow further investigation of frequent words and phrases for each dataset.  Based on recommendations from R blogs, I will use the TM package to clean up data through its tranformation functions.  Although many task could be accomplished through R strings packages, this will give me a better insight into how TM works.
+
++  Remove whitespace 
++  Remove numbers and special characters
++  Convert characters to lowercase
+
 
 
 
