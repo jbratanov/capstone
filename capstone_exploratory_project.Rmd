@@ -141,7 +141,7 @@ text(as.integer(textInfo$avgLineSize)+10, 1:3, as.integer(textInfo$avgLineSize),
 # Data Exploratory Analysis
 Now that we understand the high level and physical characters of the datasets, we will start analyzing the details of the data.  I decided to treat each dataset as its own.  There were conflicting recommendations on merging versus not merging datasets.  I felt each corpus domain (blogs, news, tweets) had its own challenges which could be better solved individually.  Based on initial data analysis, we will determine if merging files for the project makes sense.
 
-After running into memory issues with many conversion functions, I ended up going from initially trying 50% down to 10% of data samples to do data exploratory.
+After running into memory issues with many conversion functions, I ended up going from initially trying 50% down to 1% of data samples to do data exploratory.
 
 As I started to work with the Corpus data, I had to start eliminating types of characters until I was able to get a good Corpus fileof alpha words.  I ended up iteratively removing different character types.
 
@@ -155,9 +155,9 @@ As I started to work with the Corpus data, I had to start eliminating types of c
 ```{r cacheDataRead3, cache=TRUE, echo=FALSE}
 library(tm)
 
-sampleBlog <- sample(blogText,length(blogText)*0.10)
-sampleNews <- sample(newsText,length(newsText)*0.10)
-sampleTwit <- sample(twitterText,length(twitterText)*0.10)
+sampleBlog <- sample(blogText,length(blogText)*0.01)
+sampleNews <- sample(newsText,length(newsText)*0.01)
+sampleTwit <- sample(twitterText,length(twitterText)*0.01)
 
 # Create corpus data structures
 blogCorpus <- Corpus(VectorSource(sampleBlog))
@@ -190,10 +190,26 @@ dtmBlog <- DocumentTermMatrix(blogCorpus)
 dtmNews <- DocumentTermMatrix(newsCorpus)
 dtmTwit <- DocumentTermMatrix(twitCorpus)
 
+## Sort the word frequencies and print top 15.
+matrixBlog <- as.matrix(dtmBlog)
+blogFreq <- colSums(matrixBlog)
+matrixBlogSort <- sort(blogFreq, decreasing = TRUE)[1:15]
+barplot(matrixBlogSort, xlab = "Words", ylab = "Frequency", main = "Top 15 frequent words in Blog Dataset")
+
 matrixNews <- as.matrix(dtmNews)
+newsFreq <- colSums(matrixNews)
+matrixNewsSort <- sort(newsFreq, decreasing = TRUE)[1:15]
+barplot(matrixNewsSort, xlab = "Words", ylab = "Frequency", main = "Top 15 frequent words in News Dataset")
+
+matrixTwit <- as.matrix(dtmTwit)
+twitFreq <- colSums(matrixTwit)
+matrixTwitSort <- sort(twitFreq, decreasing = TRUE)[1:15]
+barplot(matrixTwitSort, xlab = "Words", ylab = "Frequency",
+        main = "Top 15 frequent words in Twitter Dataset")
 
 ```
 ### Next Steps
 First we will need to do some initial clean-up of the data to allow further investigation of frequent words and phrases for each dataset.  Based on recommendations from R blogs, I will use the TM package to clean up data through its tranformation functions.  Although many task could be accomplished through R strings packages, this will give me a better insight into how TM works.  Also, many of the functions used in TM have short cuts which would require much more code in R.
 
 + Clean R code up to be more compact.  Many repeated functions to allow for easy trial and error between the three different data sources (blogs, news, twitter)
+
