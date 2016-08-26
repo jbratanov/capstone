@@ -102,7 +102,7 @@ grid.table(textInfo, theme=gridTheme)
 #### Barplots to Visually Compare Dataset Information
 The metric information for the datasets supports the visual observations of the data.  Twitter average words per line is one third of news and blog lines.  Blogs as expected, is the largest.
 
-```{r echo=FALSE}
+```{r cacheDataRead4, cache=TRUE, echo=TRUE}
 
 par(mfrow=c(2,2))
 
@@ -143,21 +143,21 @@ Now that we understand the high level and physical characters of the datasets, w
 
 After running into memory issues with many conversion functions, I ended up going from initially trying 50% down to 1% of data samples to do data exploratory.
 
-As I started to work with the Corpus data, I had to start eliminating types of characters until I was able to get a good Corpus fileof alpha words.  I ended up iteratively removing different character types.
+As I started to work with the Corpus data, I had to start eliminating types of characters until I was able to get a good Corpus file of alpha words.  I ended up iteratively removing different character types.
 
 + Converting all to lower case, so simlar spelled words weren't affected by alpha case (lower/higher)
 + Striping white spaces from words
 + Removed punctuation which caused words to not be recognized
-+ Removed numbers.  They seemed to be extranous information
++ Removed numbers.  They seemed to be extranous information mixed with words
 
 
 
-```{r cacheDataRead3, cache=TRUE, echo=FALSE}
+```{r cacheDataRead5, cache=TRUE, echo=TRUE}
 library(tm)
 
-sampleBlog <- sample(blogText,length(blogText)*0.01)
+sampleBlog <- sample(blogText,length(blogText)*0.001)
 sampleNews <- sample(newsText,length(newsText)*0.01)
-sampleTwit <- sample(twitterText,length(twitterText)*0.01)
+sampleTwit <- sample(twitterText,length(twitterText)*0.001)
 
 # Create corpus data structures
 blogCorpus <- Corpus(VectorSource(sampleBlog))
@@ -208,8 +208,20 @@ barplot(matrixTwitSort, xlab = "Words", ylab = "Frequency",
         main = "Top 15 frequent words in Twitter Dataset")
 
 ```
-### Next Steps
-First we will need to do some initial clean-up of the data to allow further investigation of frequent words and phrases for each dataset.  Based on recommendations from R blogs, I will use the TM package to clean up data through its tranformation functions.  Although many task could be accomplished through R strings packages, this will give me a better insight into how TM works.  Also, many of the functions used in TM have short cuts which would require much more code in R.
 
-+ Clean R code up to be more compact.  Many repeated functions to allow for easy trial and error between the three different data sources (blogs, news, twitter)
+### Next Steps
+First we will need to do some additional clean-up of the data to allow further investigation of frequent words and phrases for each dataset.  Based on recommendations from R blogs, I will use the TM package to clean up data through its tranformation functions.  Although many task could be accomplished through R strings packages, this will give me a better insight into how TM works.  Also, many of the functions used in TM have short cuts which would require much more code in R.
+
++ Clean R code up to be more compact.  I repeated many repeated functions by text datasets to allow for easy trial and error between the three different data sources (blogs, news, twitter)
+
++ With memory resource challenges, I will need to look at ways for modeling the data
+
++ Run n-gram models for 2 and 3 n-grams phrase algorithm to understand what phrases can be easily predicted versus rarely or not used.
+
++ Based on -gram results, look at possible deletion of words rarely used.  Many sites include recommendation of removing and not allowing profanity which I will investigate
+
++ Need to determine if the model should work the same for all text types or use one common mode.  Will use deeper text analysis to determine which makes sense.
+
+
+
 
