@@ -1,3 +1,6 @@
+#-------------------------------------------------------------------------------------------------------
+# 
+# Jbratanov Sep-2-2016
 # In order to speed up retrieval of the training data to be used by the Capstone project, I manually
 # downloaded the training data located at
 # https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip.
@@ -6,18 +9,24 @@
 # en_US.news.txt
 # en_US.twitter.txt
 # en_US.blogs.txt
+#-------------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------------------------
+#  Get the data and create a sample
+#-------------------------------------------------------------------------------------------------------
 
 # allows for easier changes during testing
-
 sampleBlogPct <- 0.1
 sampleNewsPct <- 0.1
 sampleTwitPct <- 0.1
-
+# Program directories
+appDir="c:/Coursera/Capstone/"
+dataDir="c:/Coursera/Capstone/data/"
 
 # Included skilNul=TRUE statement to get rid of nulls from first pass.
-blogText <- readLines("../data/en_US.blogs.txt",skipNul = TRUE)
-newsText <- readLines("../data/en_US.news.txt", skipNul = TRUE)
-twitterText <- readLines("../data/en_US.twitter.txt", skipNul = TRUE)
+blogText <- readLines(paste0(dataDir,"en_US.blogs.txt"), skipNul = TRUE)
+newsText <- readLines(paste0(dataDir,"en_US.news.txt"), skipNul = TRUE)
+twitterText <- readLines(paste0(dataDir,"en_US.twitter.txt"), skipNul = TRUE)
 
 
 # Take samples from files and merge data
@@ -36,10 +45,14 @@ sampleText <- iconv(sampleText, "UTF-8", "ASCII", sub = "")
 #trainSample = subset(sampleText, splitSample == T) 
 #testSample = subset(sampleText, splitSample == F) 
 
-###################################### Quanteda ############################################
+#-------------------------------------------------------------------------------------------------------
+#  Create the Corpus
+#-------------------------------------------------------------------------------------------------------
+
+
 # I decided to try quanteda.  I found the R "tm" package slow, too much memory and complex.
 # Documenting along the way and trying to compare what I did using the "tm" package.
-###################################### Quanteda ############################################
+
 
 # Create the Corpus
 # A corpus is a kind of vector/list that facilitates applying text processing commands
@@ -72,15 +85,22 @@ dfm.4 <- dfm(sampleCorpus, ngrams=4,
              toLower = TRUE,concatenator = " ", removeNumbers = TRUE, removeSymbols=TRUE,
              removePunct = TRUE, removeSeparators = TRUE, removeTwitter = TRUE, removeURL=TRUE)
 
-# Print out frequent terms
+dfm.5 <- dfm(sampleCorpus, ngrams=5,
+             toLower = TRUE,concatenator = " ", removeNumbers = TRUE, removeSymbols=TRUE,
+             removePunct = TRUE, removeSeparators = TRUE, removeTwitter = TRUE, removeURL=TRUE)
+
+# Get top features
 freqTerms.1 <- topfeatures(dfm.1, n = nfeature(dfm.1))
 freqTerms.2 <- topfeatures(dfm.2, n = nfeature(dfm.2))
 freqTerms.3 <- topfeatures(dfm.3, n = nfeature(dfm.3))
 freqTerms.4 <- topfeatures(dfm.4, n = nfeature(dfm.4))
+freqTerms.5 <- topfeatures(dfm.5, n = nfeature(dfm.5))
 
+# Print out frequent terms
 #print(freqTerms.1[freqTerms.1 >= 1000])
 #print(freqTerms.2[freqTerms.2 >= 200])
 #print(freqTerms.3[freqTerms.3 >= 100])
+#print(freqTerms.4[freqTerms.4 >= 100])
 # Creating a "wordcloud" using quanteda
 #require(RColorBrewer)
 #plot(dfm.1, scale=c(8,.2), min.freq=3, max.words=Inf, random.order=FALSE, rot.per=.15, colors=blue)
@@ -90,11 +110,51 @@ df.1 <- data.frame(freqTerms.1)
 df.2 <- data.frame(freqTerms.2)
 df.3 <- data.frame(freqTerms.3)
 df.4 <- data.frame(freqTerms.4)
+df.5 <- data.frame(freqTerms.5)
+
+v.1 <- as.vector(freqTerms.1$rownames)
 
 # Output ngram files
 write.csv(df.1, file = "../ngram1.csv", row.names = TRUE)
 write.csv(df.2, file = "../ngram2.csv", row.names = TRUE)
 write.csv(df.3, file = "../ngram3.csv", row.names = TRUE)
 write.csv(df.4, file = "../ngram4.csv", row.names = TRUE)
+write.csv(df.5, file = "../ngram5.csv", row.names = TRUE)
 
+#saveRDS(ngram1, "ngram1.rds")
+#myngram1 <- readRDS(".rds")
+# 9. SAVE TO APP DIRECTORY
+#if(!dir.exists(app_dir)) dir.create(app_dir)
+#saveRDS(unigrams, paste0(app_dir, "1.ngr"))
+#saveRDS(bigrams, paste0(app_dir, "2.ngr"))
+#saveRDS(trigrams, paste0(app_dir, "3.ngr"))
+#saveRDS(tetragrams, paste0(app_dir, "4.ngr"))
+
+#-------------------------------------------------------------------------------------------------------
+#  Create Markov Chain
+#-------------------------------------------------------------------------------------------------------
+#load markovchain package
+library(markovchain)
+
+
+
+#library(RWeka) #Creating Document Term Matrix on bigrams
+#BigramTokenizer<-function(x) NGramTokenizer(x, Weka_control(min=2, max=2))
+#dtmtrain<-DocumentTermMatrix(train, control=list(tokenize=BigramTokenizer))
+#dtmtrain<-removeSparseTerms(dtmtrain,0.2)
+#freq<-colSums(as.matrix(dtmtrain))  #Compute the frequencies
+#wc<-data.frame(word=names(freq), freq=freq) #Create a data frame
+#mtwc<-wc[wc$freq>50,] # Subsetting more than 15 times appearances  
+#mtwc$rfreq<-round((mtwc$freq/50),0) #Changing the scale to compress the data 
+#Creating vector of bigrams sequences 
+#twce<-as.vector(mtwc$word)
+#reptwce<-rep(twce,mtwc$rfreq)
+
+#toke2<-scan_tokenizer(reptwce)  Sequence of words appearance based on bigrams
+#library(markovchain) load package markovchain
+#tokemcFit <- markovchainFit(data=toke2) #Create transition probaibility matrix
+#Function for prediction 
+#prueba<-as.vector(unlist(strsplit(n," ", fixed=TRUE))) # Input phrase
+#predictionText<-function(n) predict(tokemcFit3$estimate, newdata=as.vector(unlist(strsplit(prueba," ", fixed=TRUE))), n.ahead = 1)
+#predictionText(prueba) Output next word
 
