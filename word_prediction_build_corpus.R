@@ -125,7 +125,9 @@ library(stringr)
 print("Building df.2 DF")
 df.2 <- data.frame(word=names(freqTerms.2), freq=freqTerms.2)
 unigram <- word(df.2$word,1,1)
+value <- word(df.2$word,2,2)
 df.2$unigram <- cbind(unigram)
+df.2$value <- cbind(value)
 key<-as.character()
 for (i in length(df.2$unigram):1)
   key[i] <- paste(df.2$unigram[i], sep="|", formatC(i, width=7, flag="0"))
@@ -142,9 +144,9 @@ rm(freqTerms.2)
 print("Building df.3 DF")
 df.3 <- data.frame(word=names(freqTerms.3), freq=freqTerms.3)
 bigram <- word(df.3$word,1,2)
-unigram <- word(df.3$word,1,1)
+value <- word(df.3$word,3,3)
 df.3$bigram <- cbind(bigram)
-df.3$unigram <- cbind(unigram)
+df.3$value <- cbind(value)
 
 # Delete RFiles to save memory
 rm(unigram, bigram, freqTerms.3)
@@ -175,9 +177,9 @@ load_trie_data_structure <- function() {
   library(triebeard)
 
   # 2-ngram trie
-  trie_2ngram <- trie(keys=as.character(df.2$key), values=as.character(df.2$word))
+  trie_2ngram <- trie(keys=as.character(df.2$key), values=as.character(df.2$value))
   # 3-ngram trie
-  trie_3ngram <- trie(keys=as.character(df.3$key), values=as.character(df.3$word))
+  trie_3ngram <- trie(keys=as.character(df.3$key), values=as.character(df.3$value))
 
 }
 
@@ -186,10 +188,13 @@ load_trie_data_structure <- function() {
 # Get text match trie data structures
 #-------------------------------------------------------------------------------------------------------
 
-lookup_ngram_text <- function(words) {
+lookup_ngram_text <- function(words, num_words_return) {
   library(stringr)
-
- 
+  library(stringi)
+  
+  # remove leading and trailing spaces
+  words <- stri_trim(words)
+  
   # Get number of words in input string
   numWords <- sapply(strsplit(words, " "), length)
   
@@ -198,7 +203,7 @@ lookup_ngram_text <- function(words) {
     matches <- NULL
   }
   else if (numWords == 1) {
-    print("ngram-2")
+    #print("ngram-2")
     # add end of data suffix for search
     words <- paste0(words, "|")
     # trie lookup
@@ -206,7 +211,8 @@ lookup_ngram_text <- function(words) {
   }
   else
   {
-    print("ngram-3")
+    #print("ngram-3")
+    
     # get last 2 words for 3-ngram prefix match
     words <- word(words, numWords-1, numWords)
     # add end of data suffix for search
@@ -214,13 +220,15 @@ lookup_ngram_text <- function(words) {
     # trie lookup
     matches <- prefix_match(trie_3ngram, words)
   }
-
-
-  return(matches)
+  
+  # if number of value matches is greater than requested, return only requested
+  print(length(matches[[1]]))
+  if (length(matches[[1]]) > num_words_return) {
+    return(matches[[1]][1:num_words_return])
+  }  else {
+    
+    return(matches)
+  }
+  
   
 }
-
-
-
-
-# integrating best packages to solve issue...
