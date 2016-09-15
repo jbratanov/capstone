@@ -107,12 +107,12 @@ library(stringr)
 print("Building df.3 DF")
 df.3 <- data.frame(word=names(freqTerms.3), freq=freqTerms.3)
 bigram <- word(df.3$word,1,2)
+value <- word(df.3$word,3,3)
 df.3$bigram <- cbind(bigram)
-#unigram <- word(df.3$word,1,1)
-#df.3$unigram <- cbind(unigram)
+df.3$value <- cbind(value)
 
 # Delete RFiles to save memory
-rm(bigram, freqTerms.3)
+rm(unigram, bigram, freqTerms.3)
 
 #####################################################################
 # 3-ngram keys for trie prefix trees
@@ -137,7 +137,7 @@ library(triebeard)
 
 print("Building trie")
 # 3-ngram trie
-trie_3ngram <- trie(keys=as.character(df.3$key), values=as.character(df.3$word))
+trie_3ngram <- trie(keys=as.character(df.3$key), values=as.character(df.3$value))
 
 
 
