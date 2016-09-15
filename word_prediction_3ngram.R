@@ -139,6 +139,3 @@ print("Building trie")
 # 3-ngram trie
 trie_3ngram <- trie(keys=as.character(df.3$key), values=as.character(df.3$value))
 
-
-
-# integrating best packages to solve issue...
