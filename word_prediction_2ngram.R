@@ -93,7 +93,9 @@ library(stringr)
 print("Building df.2 DF")
 df.2 <- data.frame(word=names(freqTerms.2), freq=freqTerms.2)
 unigram <- word(df.2$word,1,1)
+value <- word(df.2$word,2,2)
 df.2$unigram <- cbind(unigram)
+df.2$value <- cbind(value)
 key<-as.character()
 for (i in length(df.2$unigram):1)
   key[i] <- paste(df.2$unigram[i], sep="|", formatC(i, width=7, flag="0"))
@@ -104,7 +106,7 @@ df.2$key <- cbind(key)
 saveRDS(df.2, (paste0(dataDir,"df.2.rds")))
 
 # Delete RFiles to save memory
-rm(freqTerms.2, key)
+rm(freqTerms.2)
 
 #-------------------------------------------------------------------------------------------------------
 # Load trie data structures
@@ -114,5 +116,4 @@ library(triebeard)
 
 print("Building trie")
 # 2-ngram trie
-trie_2ngram <- trie(keys=as.character(df.2$key), values=as.character(df.2$word))
-
+trie_2ngram <- trie(keys=as.character(df.2$key), values=as.character(df.2$value))
