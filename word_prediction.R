@@ -43,18 +43,17 @@ lookup_ngram_text <- function(words, num_words_return) {
   numWords <- sapply(strsplit(words, " "), length)
   
   if (numWords == 0) {
-    print("null value")
-    matches <- NULL
+    #print("null value")
+    return(NULL)
   }
-  else if (numWords == 1) {
+ else if (numWords == 1) {
     #print("ngram-2")
     # add end of data suffix for search
     words <- paste0(words, "|")
     # trie lookup
     matches <- prefix_match(trie_2ngram, words)
   }
-  else
-  {
+  else  {
     #print("ngram-3")
 
     # get last 2 words for 3-ngram prefix match
@@ -66,13 +65,17 @@ lookup_ngram_text <- function(words, num_words_return) {
   }
 
   # if number of value matches is greater than requested, return only requested
-  print(length(matches[[1]]))
-  if (length(matches[[1]]) > num_words_return) {
+  #print(length(matches[[1]]))
+  #print(num_words_return)
+  if (is.na(matches) == TRUE) {
+    return(NULL)   
+  }
+  else if (length(matches[[1]]) > num_words_return) {
     return(matches[[1]][1:num_words_return])
-  }  else {
-    
+  }  
+  else {
+  
     return(matches)
   }
-  
   
 }
