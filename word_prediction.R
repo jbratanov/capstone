@@ -32,7 +32,7 @@ load_trie_data_structure <- function() {
 # Get text match trie data structures
 #-------------------------------------------------------------------------------------------------------
 
-lookup_ngram_text <- function(words, num_words_return) {
+lookup_ngram_text <- function(words, num_words_return=5) {
   library(stringr)
   library(stringi)
   
@@ -48,8 +48,10 @@ lookup_ngram_text <- function(words, num_words_return) {
   }
  else if (numWords == 1) {
     #print("ngram-2")
+
     # add end of data suffix for search
-    words <- paste0(words, "|")
+    words <- paste0(words, "|")      
+
     # trie lookup
     matches <- prefix_match(trie_2ngram, words)
   }
@@ -58,8 +60,10 @@ lookup_ngram_text <- function(words, num_words_return) {
 
     # get last 2 words for 3-ngram prefix match
     words <- word(words, numWords-1, numWords)
+
     # add end of data suffix for search
     words <- paste0(words, "|")
+
     # trie lookup
     matches <- prefix_match(trie_3ngram, words)
   }
