@@ -1,4 +1,5 @@
 
+
 # server.R -- Create back end for word prediction app
 library(triebeard)
 # define server
@@ -13,14 +14,15 @@ shinyServer(function(input, output) {
   
   
   # create output for prediction as text
-  output$prediction_words <- renderPrint({
+  output$prediction_words <- renderText({
     # lookup phrase, using search type and max number of return words
     words <- user_data()
     if (length(words[[1]]) > 0) {
+      words <- unlist(words)  
       print(words)
     }
     else {
-      print("No Words Found")
+      print("")
     }
     
   })
