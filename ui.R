@@ -1,7 +1,7 @@
 #--------------------------------------------
 # Front end for word prediction application
 #--------------------------------------------
-
+library(triebeard)
 library(shiny)
 library(shinythemes)
 
@@ -12,6 +12,8 @@ shinyUI(fluidPage(
   # style screen as minimal and neutral
   theme = shinytheme("united"),
 
+
+  
 #--------------------------------------------
 #Side bar layout
 #--------------------------------------------
@@ -37,11 +39,12 @@ sidebarLayout(position = "right",
 # Main Panel
 
 mainPanel(
-              
+
+  
     # Phase input
-    textInput(inputId = "phrase", label = "Enter a phrase for word prediction",
-              value = "",
-              width = '50%',
+    textInput(inputId = "phrase", label = "One moment: Loading Word Corpus",
+              value = "Loading data:  Similar to turning on cell phone",
+              width = '100%',
               placeholder = ""
              ),
                   
@@ -117,49 +120,43 @@ tabsetPanel(
       br(),
                       
       p(
-         "Inputs for this app's language model were 3 corpora
-         of approximately 200 MB each from Twitter, news, and blogs.
-         80% samples were used, with 20% reserved for testing.
-         Ngram models were created from these corpora using strings of 1-4 words.
-         Good-Turing smoothing was then applied to account for unseen grams."
-       ),
-                      
-      p(
-         "A series of optimizations was made to produce a working model:",
+         "One of my goals was to do more intergation than trying to re-invent the wheel through
+          pure custom code.  I  started with about 90% custom code, but as I learned more about
+          existing R packages which solved many functional areas I was coding, I ended up with
+          a good mix of 50% custom and 50% re-use of existing R packages.  I used the packaged 
+          libraries where it had  better performance or already built API's which fit nicely
+          into my project.",
          tags$ul(
-                  tags$li("A trie data structure to reduce speed complexity to a constant value, and to trim redundant storage of ngram prefixes"),
-                  tags$li("Filtering out of ngrams whose instance count was 1, in order to improve prediction accuracy and reduce storage for uninformative features"),
-                  tags$li("Storing terms as integer keys into a master index, in order to reduce redundant language in the model"),
-                  tags$li("Converting term probabilities to quantized logarithms, in order to reduce the storage space required for double-precision, floating-point numbers")
-                  )
+           tags$li ("Input data was taken from Twitter, news, and blogs
+                     of about 200 MB for each corpus file."),
+           tags$li ("80% of samples were from news and blogs with 20% from twitter 
+                   for the final corpus."),
+           tags$li ("Due to the size of RAM, ngram files were created separately by ngram
+                     level.  This means 4 separate program runs to created the required corpus."),
+           tags$li ("TM (text mining) package was originally used, but changed to
+                   Quanteda after test trials showed better performance and less complex
+                   usage to create 4 levels of corpus files."),
+           tags$li ("Final Smoothing of data was used to remove frequencies of less than 5 for
+                   each ngram level to lower storage requirements and faster loading response."),
+           tags$li ("Trie data structures were used for word prediction data access and retrieval
+                   which improved response time significally. The triebeard package was used and saved
+                   implementation time and already had built-in utilities which helped integrate
+                   trie logic easily into my project."),
+           tags$li ("Back off ngram method was used in identifying potential word prediction.  Phrases
+                   were started at the hightest possible ngram level which gave it the highest
+                   probability for a prediction match.  If a phrase didn't find a match, it drops
+                   the leading word and validates against the next lower ngram level.")
+         
+         )
        ),
                       
+                      
       p(
-         "The app was created in RStudio using the quanteda package
-         and custom code.
-         Computation was performed on a MacBook Pro (mid-2014)
-         with a 2.2 GHz quad-core CPU and 16 GB RAM.
-         Computation time was approximately 4 hours
-         to build the combined language model."
-        ),
-                      
-       p(
-          "Key references for this work were:",
-           tags$ul(
-                    tags$li(span("Speech and Language Processing",
-                      style = "font-style:italic"),
-                      "(second edition), by Jurafsky and Martin, chapter 4"),
-                    tags$li(span("Statistical Machine Translation",
-                      style = "font-style:italic"),
-                       "by Philipp Koehn, chapter 7")
-                   )
-         ),
-                      
-        p(
-           "This app was created for the capstone project
-           in the Data Science specialization of Coursera."
-          )
-              
+         "The app was created in RStudio using an HP EliteBook 8470p
+         with a 2.6 GHz dual-core CPU and 8 GB RAM.  Due to the size of RAM,
+         creation of ngram levels were created in the following program flow:"
+        )
+
   ),
   style = "padding-right:2.5%")
 )
