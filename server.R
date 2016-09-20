@@ -1,13 +1,20 @@
 
 
 # server.R -- Create back end for word prediction app
-library(triebeard)
+
+source("word_prediction.R")
+
+
+    
 # define server
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
+
+  updateTextInput(session, "phrase",  label = paste("Enter a phrase for word prediction"),
+                   value = paste(""))
   
   # define reactive variable to hold user input
   user_data <- reactive({
-
+    
     lookup_ngram_text(input$phrase, input$max_words_returned)
 
   })
