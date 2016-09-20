@@ -11,22 +11,39 @@
 appDir="c:/Coursera/Capstone/"
 dataDir="c:/Coursera/Capstone/data/"
 
+
 #-------------------------------------------------------------------------------------------------------
-# Function: Load trie data structures
+# Load trie data structures
 #-------------------------------------------------------------------------------------------------------
 
-load_trie_data_structure <- function() {
-  
   library(triebeard)
-  
+
   # 2-ngram trie
+  #print("loading 2-ngram trie")
   trie_2ngram <- trie(keys=as.character(df.2$key), values=as.character(df.2$value))
+  if (length(trie_2ngram) == length(df.2$key)) {
+    
+    print("trie_2ngram length success")
+    
+  }
+ 
   # 3-ngram trie
+  #print("loading 3-ngram trie")
   trie_3ngram <- trie(keys=as.character(df.3$key), values=as.character(df.3$value))
+  if (length(trie_3ngram) == length(df.3$key)) {
   
+    print("trie_3ngram length success")
+  
+  }
+
+# 4-ngram trie
+#print("loading 3-ngram trie")
+trie_4ngram <- trie(keys=as.character(df.4$key), values=as.character(df.4$value))
+if (length(trie_4ngram) == length(df.4$key)) {
+  
+  print("trie_4ngram length success")
   
 }
-
 
 #-------------------------------------------------------------------------------------------------------
 # Get text match trie data structures
