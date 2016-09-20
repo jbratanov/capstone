@@ -64,31 +64,32 @@ lookup_ngram_text <- function(words, num_words_return=5) {
     return(NULL)
   }
  else if (numWords == 1) {
-    #print("ngram-2")
-
     # add end of data suffix for search
     words <- paste0(words, "|")      
-
-    # trie lookup
+    # 2-ngram trie lookup
     matches <- prefix_match(trie_2ngram, words)
   }
-  else  {
-    #print("ngram-3")
-
+  else if (numWords == 2) {
     # get last 2 words for 3-ngram prefix match
     words <- word(words, numWords-1, numWords)
-
     # add end of data suffix for search
     words <- paste0(words, "|")
-
-    # trie lookup
+    # 3-ngram trie lookup
     matches <- prefix_match(trie_3ngram, words)
   }
-
-  # if number of value matches is greater than requested, return only requested
-  #print(length(matches[[1]]))
-  #print(num_words_return)
-  if (is.na(matches) == TRUE) {
+  else {
+    # get last 3 words for 4-ngram prefix match
+    words <- word(words, numWords-2, numWords)
+    print("4-ngram")
+    print(words)
+    # add end of data suffix for search
+    words <- paste0(words, "|")
+    # 4-ngram trie lookup
+    matches <- prefix_match(trie_4ngram, words)
+   # if number of value matches is greater than requested, return only requested
+  }
+   
+   if (is.na(matches) == TRUE) {
     return(NULL)   
   }
   else if (length(matches[[1]]) > num_words_return) {
