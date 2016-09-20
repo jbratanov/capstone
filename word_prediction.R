@@ -59,19 +59,30 @@ lookup_ngram_text <- function(words, num_words_return=5) {
   # Get number of words in input string
   numWords <- sapply(strsplit(words, " "), length)
   
-  if (numWords == 0) {
-    #print("null value")
-    return(NULL)
-  }
- else if (numWords == 1) {
-    matches <- get_2gram(words)
-  }
- else if (numWords == 2) {
-    matches <- get_3gram(words)
-  }
- else {
+
+  if (numWords > 2) {
     matches <- get_4gram(words)
+    if (is.na(matches) == TRUE) {
+      matches <- get_3gram(words)
+      if (is.na(matches) == TRUE) {
+        matches <- get_2gram(words)
+      }
+    }  
   }
+  else if (numWords == 2) {
+    matches <- get_3gram(words)
+    if (is.na(matches) == TRUE) {
+      matches <- get_2gram(words)
+    }
+  }
+  else if (numWords == 1) {
+    matches <- get_2gram(words)
+    #print(matches)
+  }
+  else {
+   #print("null value")
+   return(NULL)
+  }  
    
   # if number of value matches is greater than requested, return only requested
    if (is.na(matches) == TRUE) {
@@ -93,9 +104,14 @@ lookup_ngram_text <- function(words, num_words_return=5) {
 #-------------------------------------------------------------------------------------------------------
 get_2gram <- function(words) {
   
+  numWords <- sapply(strsplit(words, " "), length)
+  # get last 2 words for 3-ngram prefix match
+  words <- word(words, numWords, numWords)
   # add end of data suffix for search
   words <- paste0(words, "|")      
   # 2-ngram trie lookup
+  print("2-ngram")
+  print(words)
   matches <- prefix_match(trie_2ngram, words)
   
   return(matches)
@@ -108,8 +124,13 @@ get_2gram <- function(words) {
 #-------------------------------------------------------------------------------------------------------
 get_3gram <- function(words) {
   
+
+  # Get number of words in input string
+  numWords <- sapply(strsplit(words, " "), length)
   # get last 2 words for 3-ngram prefix match
-  words <- word(words, 1, 2)
+  words <- word(words, numWords-1, numWords)
+  print("3-ngram")
+  print(words)
   # add end of data suffix for search
   words <- paste0(words, "|")
   # 3-ngram trie lookup
