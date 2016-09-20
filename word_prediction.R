@@ -36,14 +36,14 @@ dataDir="c:/Coursera/Capstone/data/"
   
   }
 
-# 4-ngram trie
-#print("loading 3-ngram trie")
-trie_4ngram <- trie(keys=as.character(df.4$key), values=as.character(df.4$value))
-if (length(trie_4ngram) == length(df.4$key)) {
+  # 4-ngram trie
+  #print("loading 4-ngram trie")
+  trie_4ngram <- trie(keys=as.character(df.4$key), values=as.character(df.4$value))
+  if (length(trie_4ngram) == length(df.4$key)) {
   
-  print("trie_4ngram length success")
+    print("trie_4ngram length success")
   
-}
+  }
 
 #-------------------------------------------------------------------------------------------------------
 # Get text match trie data structures
@@ -64,31 +64,16 @@ lookup_ngram_text <- function(words, num_words_return=5) {
     return(NULL)
   }
  else if (numWords == 1) {
-    # add end of data suffix for search
-    words <- paste0(words, "|")      
-    # 2-ngram trie lookup
-    matches <- prefix_match(trie_2ngram, words)
+    matches <- get_2gram(words)
   }
-  else if (numWords == 2) {
-    # get last 2 words for 3-ngram prefix match
-    words <- word(words, numWords-1, numWords)
-    # add end of data suffix for search
-    words <- paste0(words, "|")
-    # 3-ngram trie lookup
-    matches <- prefix_match(trie_3ngram, words)
+ else if (numWords == 2) {
+    matches <- get_3gram(words)
   }
-  else {
-    # get last 3 words for 4-ngram prefix match
-    words <- word(words, numWords-2, numWords)
-    print("4-ngram")
-    print(words)
-    # add end of data suffix for search
-    words <- paste0(words, "|")
-    # 4-ngram trie lookup
-    matches <- prefix_match(trie_4ngram, words)
-   # if number of value matches is greater than requested, return only requested
+ else {
+    matches <- get_4gram(words)
   }
    
+  # if number of value matches is greater than requested, return only requested
    if (is.na(matches) == TRUE) {
     return(NULL)   
   }
@@ -99,5 +84,58 @@ lookup_ngram_text <- function(words, num_words_return=5) {
   
     return(matches)
   }
+  
+}
+
+
+#-------------------------------------------------------------------------------------------------------
+# 2-ngram logic
+#-------------------------------------------------------------------------------------------------------
+get_2gram <- function(words) {
+  
+  # add end of data suffix for search
+  words <- paste0(words, "|")      
+  # 2-ngram trie lookup
+  matches <- prefix_match(trie_2ngram, words)
+  
+  return(matches)
+  
+}
+
+
+#-------------------------------------------------------------------------------------------------------
+# 3-ngram logic
+#-------------------------------------------------------------------------------------------------------
+get_3gram <- function(words) {
+  
+  # get last 2 words for 3-ngram prefix match
+  words <- word(words, 1, 2)
+  # add end of data suffix for search
+  words <- paste0(words, "|")
+  # 3-ngram trie lookup
+  matches <- prefix_match(trie_3ngram, words)
+  
+  return(matches)
+  
+}
+
+
+#-------------------------------------------------------------------------------------------------------
+# 4-ngram logic
+#-------------------------------------------------------------------------------------------------------
+get_4gram <- function(words) {
+  
+  # Get number of words in input string
+  numWords <- sapply(strsplit(words, " "), length)
+  # get last 3 words for 4-ngram prefix match
+  words <- word(words, numWords-2, numWords)
+  print("4-ngram")
+  print(words)
+  # add end of data suffix for search
+  words <- paste0(words, "|")
+  # 4-ngram trie lookup
+  matches <- prefix_match(trie_4ngram, words)
+  
+  return(matches)
   
 }
