@@ -108,8 +108,41 @@ saveRDS(freqTerms.3, (paste0(dataDir,"freqTerms.3.rds")))
 # Delete RFiles to save memory
 rm(dfm.3)
 
+
+#######################################
+# Get 4-ngram corpus data
+#######################################
+
+# Create Doc Term Matrix for 4-ngram
+print("Building dfm.4 data")
+dfm.4 <- dfm(sampleText, ngrams=4,
+             toLower = TRUE,concatenator = " ", removeNumbers = TRUE, removeSymbols=TRUE,
+             removePunct = TRUE, removeSeparators = TRUE, removeTwitter = TRUE, removeURL=TRUE)
+
+# Save dfm n-gram data to file
+saveRDS(dfm.4, (paste0(dataDir,"dfm.4.rds")))
+
+# Get frequency for each bigram.
+# Create file of dropped data for good turing smoothing model
+print("Building freqTerms.4 data")
+freqTerms.4 <- topfeatures(dfm.4, n = nfeature(dfm.4))
+#df.4.dropped <-freqTerms.4[freqTerms.4 < 6]  # Drop frequency > 5 to drop file
+#df.4.drop <- data.frame(word=names(df.4.dropped), freq=df.4.dropped)
+freqTerms.4 <-freqTerms.4[freqTerms.4 > 3] # Keep freqency > 5 to word prediction file
+
+# Save corpus freqTerms data to file
+saveRDS(freqTerms.4, (paste0(dataDir,"freqTerms.4.rds")))
+
+# Delete RFiles to save memory
+rm(dfm.4)
+
+
+
 # Delete raw data sample text RFile to save memory
 rm(sampleText)
+
+
+
 
 
 #-------------------------------------------------------------------------------------------------------
@@ -126,48 +159,87 @@ print("Building df.2 DF")
 df.2 <- data.frame(word=names(freqTerms.2), freq=freqTerms.2)
 unigram <- word(df.2$word,1,1)
 value <- word(df.2$word,2,2)
-df.2$unigram <- cbind(unigram)
 df.2$value <- cbind(value)
+
+# Count backwards, so hightest freq written first
 key<-as.character()
-for (i in length(df.2$unigram):1)
-  key[i] <- paste(df.2$unigram[i], sep="|", formatC(i, width=7, flag="0"))
+for (i in length(unigram):1)
+  key[i] <- paste(unigram[i], sep="|", formatC(i, width=7, flag="0"))
 # bind key data to 2-ngram DF
 df.2$key <- cbind(key)
+
+# Drop word column
+df.2$word <- NULL
 
 # Save corpus freqTerms data to file
 saveRDS(df.2, (paste0(dataDir,"df.2.rds")))
 
 # Delete RFiles to save memory
-rm(freqTerms.2)
+rm(unigram, value, freqTerms.2)
 
-# 3-ngram DF
-print("Building df.3 DF")
-df.3 <- data.frame(word=names(freqTerms.3), freq=freqTerms.3)
-bigram <- word(df.3$word,1,2)
-value <- word(df.3$word,3,3)
-df.3$bigram <- cbind(bigram)
-df.3$value <- cbind(value)
 
-# Delete RFiles to save memory
-rm(unigram, bigram, freqTerms.3)
 
 #####################################################################
 # 3-ngram keys for trie prefix trees
 # Used "|" as separator to create uniqueness in duplicate keys
 #####################################################################
+# 3-ngram DF
+print("Building df.3 DF")
+df.3 <- data.frame(word=names(freqTerms.3), freq=freqTerms.3)
+bigram <- word(df.3$word,1,2)
+value <- word(df.3$word,3,3)
+df.3$value <- cbind(value)
+
+
+
 key<-as.character()
-for (i in length(df.3$bigram):1)
-  key[i] <- paste(df.3$bigram[i], sep="|", formatC(i, width=7, flag="0"))
+for (i in length(bigram):1)
+  key[i] <- paste(bigram[i], sep="|", formatC(i, width=7, flag="0"))
 # bind key data to 3-ngram DF
 df.3$key <- cbind(key)
+
+# Drop word column
+df.3$word <- NULL
 
 # Save corpus freqTerms data to file
 saveRDS(df.3, (paste0(dataDir,"df.3.rds")))
 
 # Delete RFiles to save memory
-rm(key)
+# Delete RFiles to save memory
+rm(bigram, value, freqTerms.3, key)
 
 
+#####################################################################
+# 4-ngram keys for trie prefix trees
+# Used "|" as separator to create uniqueness in duplicate keys
+#####################################################################
+
+# 4-ngram DF
+print("Building df.4 DF")
+df.4 <- data.frame(word=names(freqTerms.4), freq=freqTerms.4)
+trigram <- word(df.4$word,1,3)
+value <- word(df.4$word,4,4)
+df.4$value <- cbind(value)
+
+# Delete RFiles to save memory
+rm(freqTerms.4)
+
+key<-as.character()
+for (i in length(trigram):1)
+  key[i] <- paste(trigram[i], sep="|", formatC(i, width=7, flag="0"))
+# bind key data to 3-ngram DF
+df.4$key <- cbind(key)
+
+# Drop word column
+df.4$word <- NULL
+
+# Save corpus freqTerms data to file
+saveRDS(df.4, (paste0(dataDir,"df.4.rds")))
+
+# Delete RFiles to save memory
+rm(trigram, value, key)
+
+gc()
 #-------------------------------------------------------------------------------------------------------
 # Function: Load trie data structures
 #-------------------------------------------------------------------------------------------------------
@@ -180,7 +252,8 @@ load_trie_data_structure <- function() {
   trie_2ngram <- trie(keys=as.character(df.2$key), values=as.character(df.2$value))
   # 3-ngram trie
   trie_3ngram <- trie(keys=as.character(df.3$key), values=as.character(df.3$value))
-
+  # 3-ngram trie
+  trie_4ngram <- trie(keys=as.character(df.4$key), values=as.character(df.4$value))
 }
 
 
