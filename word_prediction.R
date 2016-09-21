@@ -105,7 +105,7 @@ lookup_ngram_text <- function(words, num_words_return=5) {
 get_2gram <- function(words) {
   
   numWords <- sapply(strsplit(words, " "), length)
-  # get last 2 words for 3-ngram prefix match
+  # get last word for 2-ngram prefix match
   words <- word(words, numWords, numWords)
   # add end of data suffix for search
   words <- paste0(words, "|")      
