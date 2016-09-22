@@ -2,13 +2,29 @@
 
 # server.R -- Create back end for word prediction app
 
-source("word_prediction.R")
+# increase to 100MB
+options(shiny.maxRequestSize=100*1024^2)
+
+# Program directories
+#appDir="c:/Coursera/Capstone/code/"
+#dataDir="c:/Coursera/Capstone/data/"
+appDir="./"
+dataDir="./"
+# Load ngram files
+df.4 <- readRDS(paste0(dataDir,"df.4.rds"))
+df.3 <- readRDS(paste0(dataDir,"df.3.rds"))
+df.2 <- readRDS(paste0(dataDir,"df.2.rds"))
+
+# Source loading trie ngram data structures and prediction lookup
+source("word_prediction.R", local=TRUE)
+
+
 
 
     
 # define server
 shinyServer(function(input, output, session) {
-
+  
   updateTextInput(session, "phrase",  label = paste("Enter a phrase for word prediction"),
                    value = paste(""))
   
