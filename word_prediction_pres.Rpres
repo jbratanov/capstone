@@ -1,0 +1,47 @@
+Word Prediction Application - John's Hopkins University Capstone Project
+========================================================
+author: jbratanov
+date:   09-Sep-2016
+
+Introduction
+========================================================
+
+Our goal is to build a predictive text pattern algorithm using Natural Language Processing to predict the next word or set of words as users type real time.
+
+The data is from a corpus called HC Corpora and is located at www.corpora.heliohost.org.
+
+Three types of datasets are used to train the model: Twitter, news and blogs, each Coprus file
+containing about 200 MB of text.
+
+The use of N-Grams and a back-off predictive algorithm was applied to predict next word(s). The final predictive model was optimized to work within the boundaries of the shiny.io cloud site as a Shiny application.
+
+Data Exploration and Cleaning
+========================================================
+The following steps were executed to clean and refine very large twitter, news and blogs files.
+
+- 70% of the original data was randomly selected from the three sources and merged into one training dataset.
+- Data cleaning involved converting to lower case, removing punctuations, white space, numbers and non ASCII characters.
+- 3 files of n-grams were created with 2,3 and 4 word phrases.
+- Phrase frequencies were calculated and sorted in descending order.
+- Smoothing of data removed frequencies of less than 5 for each ngram to reduce their size for best performance.
+
+Natural Language Prediction Model
+========================================================
+The next word prediction model is based on a Back-off algorithm. Here are the steps involved in predicting the next word of the user specified sentence
+
+- Load 3 R-compressed n-gram data sets into a trie digital data structure for quick data access and retrieval
+- Clean user input to match similar cleaning as ngram datasets.
+- Use highest number of words to determine which ngram level to start with before back-off to
+next level.  Highest level of words in a phrase is last 3 words.  Back-off means nothing found, so drop a word and use 2 words.  Last level is 1 word, after that, no words return.  Future enhancement should add manually typed word not in ngrams into a users Corpus for future prediction use.
+
+Word Prediction Shiny Application
+========================================================
+
+Below is a screenshot of the shiny application
+
+![wpscreen](wpscreen2.png)
+
+
+[Click Here to Try Application](https://jbratanov.shinyapps.io/word_prediction/)
+
+
